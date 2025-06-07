@@ -10,19 +10,19 @@ using namespace views;
 namespace fs = std::filesystem;
 
 PointCloudViewController::PointCloudViewController(fs::path pcPath) : viewId(IdFactory::getInstance().getId()),
-                                                                              timeline(sceneModel),
-                                                                              dataset(pcPath),
-                                                                              sceneModel(),
-                                                                              datasetMetadata(utils::dataset::getDatasetMetadata(pcPath.parent_path() / "metadata.json")),
-                                                                              viewContext(),
-                                                                              annotationView(sceneModel, viewId),
-                                                                              pointCloudView(sceneModel, viewId),
-                                                                              lookatControl(viewId),
-                                                                              addKeypointView(sceneModel, timeline, viewId),
-                                                                              moveToolView(sceneModel, timeline, viewId),
-                                                                              addBBoxView(sceneModel, datasetMetadata, timeline, viewId),
-                                                                              addRectangleView(sceneModel, timeline, viewId),
-                                                                              statusBarView(sceneModel, IdFactory::getInstance().getId()) {
+                                                                      timeline(sceneModel),
+                                                                      dataset(pcPath),
+                                                                      sceneModel(),
+                                                                      datasetMetadata(utils::dataset::getDatasetMetadata(pcPath.parent_path() / "metadata.json")),
+                                                                      viewContext(),
+                                                                      annotationView(sceneModel, viewId),
+                                                                      pointCloudView(sceneModel, viewId),
+                                                                      lookatControl(viewId),
+                                                                      addKeypointView(sceneModel, timeline, viewId),
+                                                                      moveToolView(sceneModel, timeline, viewId),
+                                                                      addBBoxView(sceneModel, datasetMetadata, timeline, viewId),
+                                                                      addRectangleView(sceneModel, timeline, viewId),
+                                                                      statusBarView(sceneModel, dataset, IdFactory::getInstance().getId()) {
 
   annotationPath = utils::dataset::getAnnotationPathForPointCloudPath(pcPath);
   auto future = dataset.getCurrentCloud();
@@ -158,9 +158,11 @@ bool PointCloudViewController::keypress(char character, const InputModifier mod)
       sceneModel.currentClassId = integerValue;
       getActiveToolView().keypress(character, mod);
     }
-  } else if (int(character) == 2) {
+  } else if (character == 'N') {
     // Tab pressed.
     nextPointCloud();
+  } else if (character == 'P') {
+    prevPointCloud();
   }
   return false;
 }
@@ -210,3 +212,13 @@ void PointCloudViewController::nextPointCloud() {
   load();
 }
 
+void PointCloudViewController::prevPointCloud() {
+  auto future = dataset.previous();
+  future.wait();
+  auto pointCloud = future.get();
+  sceneModel.setPointCloud(pointCloud);
+  sceneModel.reset();
+  pointCloudView.reload();
+  annotationPath = utils::dataset::getAnnotationPathForPointCloudPath(dataset.currentPath());
+  load();
+}

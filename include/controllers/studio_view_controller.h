@@ -5,6 +5,7 @@
 #include "views/view.h"
 #include "scene_model.h"
 #include "view_context_3d.h"
+#include "model/point_cloud_dataset.h"
 #include "controllers/controller.h"
 #include "controllers/preview_controller.h"
 #include "views/point_cloud_view.h"
@@ -27,6 +28,7 @@ private:
   SceneCamera sceneCamera;
   fs::path datasetPath;
   fs::path pointCloudPath;
+  model::PointCloudDataset dataset;
 
   DatasetMetadata datasetMetadata;
   Timeline timeline;
@@ -49,6 +51,7 @@ private:
   std::shared_ptr<controllers::PreviewController> preview;
 
   camera::CameraControls cameraControls;
+
 public:
   StudioViewController(fs::path datasetPath);
   void viewWillAppear(const views::Rect& r) override;

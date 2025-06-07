@@ -44,7 +44,7 @@ TrueTypeHandle loadTtf(FontManager* fontManager, const char* filePath) {
   return invalid;
 }
 
-StatusBarView::StatusBarView(const SceneModel& model, int viewId) : views::View(viewId), model(model) {
+StatusBarView::StatusBarView(const SceneModel& refModel, const model::PointCloudDataset& refDataset, int viewId) : views::View(viewId), dataset(refDataset), sceneModel(refModel) {
   fontManager = new FontManager(512);
   bufferManager = new TextBufferManager(fontManager);
 
@@ -64,6 +64,10 @@ StatusBarView::StatusBarView(const SceneModel& model, int viewId) : views::View(
 
   toolText = bufferManager->createTextBuffer(FONT_TYPE_DISTANCE, BufferType::Transient);
   bufferManager->setTextColor(toolText, TextColor);
+
+  caseIdText = bufferManager->createTextBuffer(FONT_TYPE_DISTANCE, BufferType::Transient);
+  bufferManager->setTextColor(caseIdText, TextColor);
+
   classIdText = bufferManager->createTextBuffer(FONT_TYPE_DISTANCE, BufferType::Transient);
   bufferManager->setTextColor(classIdText, TextColor);
   bgfx::setViewClear(viewId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, StatusBarColor, 0.0f, 0);
@@ -104,7 +108,7 @@ void StatusBarView::render() const {
   bufferManager->clearTextBuffer(toolText);
   bufferManager->setPenPosition(toolText, padding, 0.0f);
   bufferManager->appendText(toolText, fontHandle, "Tool: ");
-  switch (model.activeToolId) {
+  switch (sceneModel.activeToolId) {
   case AddKeypointToolId:
     bufferManager->appendText(toolText, fontHandle, "Keypoint");
     break;
@@ -119,10 +123,18 @@ void StatusBarView::render() const {
     break;
   }
   bufferManager->submitTextBuffer(toolText, viewId);
+
+  bufferManager->clearTextBuffer(caseIdText);
+  bufferManager->setPenPosition(caseIdText, rect.width * 0.25 - padding, 0.0f);
+  std::stringstream caseidstream;
+  caseidstream << "fn: " << dataset.currentPath().filename().string();
+  bufferManager->appendText(caseIdText, fontHandle, caseidstream.str().c_str());
+  bufferManager->submitTextBuffer(caseIdText, viewId);
+
   bufferManager->clearTextBuffer(classIdText);
   bufferManager->setPenPosition(classIdText, rect.width - instanceTextWidth - padding, 0.0f);
   std::stringstream stream;
-  stream << "Class id: " << model.currentClassId;
+  stream << "Class id: " << sceneModel.currentClassId;
   bufferManager->appendText(classIdText, fontHandle, stream.str().c_str());
   bufferManager->submitTextBuffer(classIdText, viewId);
 };

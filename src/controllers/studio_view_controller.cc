@@ -15,6 +15,7 @@ using namespace commands;
 using namespace views;
 
 StudioViewController::StudioViewController(fs::path datasetPath) : viewId(IdFactory::getInstance().getId()),
+                                                                   dataset(datasetPath),
                                                                    sceneModel((datasetPath / "scene" / "integrated.ply").string()),
                                                                    sceneCamera(datasetPath / "camera_intrinsics.json"),
                                                                    datasetPath(datasetPath),
@@ -29,7 +30,7 @@ StudioViewController::StudioViewController(fs::path datasetPath) : viewId(IdFact
                                                                    moveToolView(sceneModel, timeline, viewId),
                                                                    addBBoxView(sceneModel, datasetMetadata, timeline, viewId),
                                                                    addRectangleView(sceneModel, timeline, viewId),
-                                                                   statusBarView(sceneModel, IdFactory::getInstance().getId()) {
+                                                                   statusBarView(sceneModel, dataset, IdFactory::getInstance().getId()) {
   pointCloudPath = datasetPath / "scene" / "cloud.ply";
   preview = std::make_shared<controllers::PreviewController>(sceneModel, datasetPath, IdFactory::getInstance().getId());
   addSubController(std::static_pointer_cast<controllers::Controller>(preview));
@@ -233,4 +234,3 @@ void StudioViewController::loadPointCloud() {
   }
   pointCloudView.loadPointCloud();
 }
-

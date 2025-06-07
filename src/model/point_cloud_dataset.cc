@@ -11,6 +11,7 @@ PointCloudDataset::PointCloudDataset(fs::path current) : path(current.parent_pat
   currentIndex = it - pointClouds.begin();
   currentCloud = fetchPointCloud(currentPointCloud);
   nextCloud = fetchPointCloud(nextPath());
+  prevCloud = fetchPointCloud(prevPath());
 }
 
 const std::shared_future<PointCloudPtr>& PointCloudDataset::getCurrentCloud() const {
@@ -22,12 +23,23 @@ fs::path PointCloudDataset::nextPath() const {
   int nextIndex = (currentIndex + 1) % int(pointClouds.size());
   return pointClouds[nextIndex];
 }
+fs::path PointCloudDataset::prevPath() const {
+  int prevIndex = (currentIndex + int(pointClouds.size()) - 1) % int(pointClouds.size());
+  return pointClouds[prevIndex];
+}
 
 std::shared_future<PointCloudPtr> PointCloudDataset::next() {
   currentIndex = (currentIndex + 1) % int(pointClouds.size());
   currentPointCloud = pointClouds[currentIndex];
   currentCloud = nextCloud;
   nextCloud = fetchPointCloud(nextPath());
+  return currentCloud;
+}
+std::shared_future<PointCloudPtr> PointCloudDataset::previous() {
+  currentIndex = (currentIndex + int(pointClouds.size()) - 1) % int(pointClouds.size());
+  currentPointCloud = pointClouds[currentIndex];
+  currentCloud = prevCloud;
+  prevCloud = fetchPointCloud(prevPath());
   return currentCloud;
 }
 
@@ -42,7 +54,7 @@ void PointCloudDataset::indexPointClouds() {
 }
 
 std::shared_future<PointCloudPtr> PointCloudDataset::fetchPointCloud(fs::path pcPath) {
-  auto path = nextPath();
+  // auto path = nextPath();
   std::promise<PointCloudPtr> promise;
   std::shared_future<PointCloudPtr> theFuture = promise.get_future();
   auto getFunction = [&, theFuture]() -> PointCloudPtr {
@@ -55,4 +67,4 @@ std::shared_future<PointCloudPtr> PointCloudDataset::fetchPointCloud(fs::path pc
   return theFuture;
 }
 
-}
+} // namespace model

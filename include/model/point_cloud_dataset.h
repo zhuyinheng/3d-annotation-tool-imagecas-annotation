@@ -1,3 +1,4 @@
+#pragma once
 #include <filesystem>
 #include <vector>
 #include <memory>
@@ -14,7 +15,7 @@ class PointCloudDataset {
 private:
   fs::path path;
   fs::path currentPointCloud;
-  std::shared_future<PointCloudPtr> currentCloud, nextCloud;
+  std::shared_future<PointCloudPtr> currentCloud, nextCloud, prevCloud;
   std::vector<fs::path> pointClouds;
   int currentIndex = -1;
 
@@ -22,8 +23,10 @@ public:
   PointCloudDataset(fs::path current);
   const std::shared_future<PointCloudPtr>& getCurrentCloud() const;
   fs::path currentPath() const;
+  fs::path prevPath() const;
   fs::path nextPath() const;
   std::shared_future<PointCloudPtr> next();
+  std::shared_future<PointCloudPtr> previous();
 
 private:
   void indexPointClouds();

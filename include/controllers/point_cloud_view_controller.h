@@ -82,4 +82,5 @@ private:
   views::Rect statusBarRect() const;
   void updateViewContext(double x, double y, InputModifier mod);
   void nextPointCloud();
+  void prevPointCloud();
 };
